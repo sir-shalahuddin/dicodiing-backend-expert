@@ -4,27 +4,29 @@ class Reply {
     this._verifyPayload(payload);
 
     const {
-      id, date, username, content,
+      id, createdAt, deletedAt, username, content,
     } = payload;
 
     this.id = id;
-    this.date = date;
+    this.createdAt = createdAt;
+    this.deletedAt = deletedAt;
     this.username = username;
     this.content = content;
   }
 
   _verifyPayload({
-    id, date, username, content,
+    id, createdAt, deletedAt, username, content,
   }) {
-    if (!id || !date || !username || !content) {
+    if (!id || !createdAt || !deletedAt || !username || !content) {
       throw new Error('REPLY.NOT_CONTAIN_NEEDED_PROPERTY');
     }
 
     if (
       typeof id !== 'string'
-            || typeof date !== 'string'
-            || typeof username !== 'string'
-            || typeof content !== 'string') {
+      || typeof createdAt !== 'string'
+      || typeof deletedAt !== 'string'
+      || typeof username !== 'string'
+      || typeof content !== 'string') {
       throw new Error('REPLY.NOT_MEET_DATA_TYPE_SPECIFICATION');
     }
   }

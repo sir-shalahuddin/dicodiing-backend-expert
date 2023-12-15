@@ -32,18 +32,21 @@ describe('a Comment entities', () => {
     const payload = {
       id: 123,
       username: 'johndoe',
-      date: '2021-08-08T07:22:33.555Z',
+      createdAt: '2021-08-08T08:07:01.522Z',
+      deletedAt: '2021-08-08T08:07:01.522Z',
       replies: [
         {
           id: 'reply-BErOXUSefjwWGW1Z10Ihk',
           content: '**balasan telah dihapus**',
-          date: '2021-08-08T07:59:48.766Z',
+          createdAt: '2021-08-08T08:07:01.522Z',
+          deletedAt: '2021-08-08T08:07:01.522Z',
           username: 'johndoe',
         },
         {
           id: 'reply-xNBtm9HPR-492AeiimpfN',
           content: 'sebuah balasan',
-          date: '2021-08-08T08:07:01.522Z',
+          createdAt: '2021-08-08T08:07:01.522Z',
+          deletedAt: '2021-08-08T08:07:01.522Z',
           username: 'dicoding',
         },
       ],
@@ -59,18 +62,21 @@ describe('a Comment entities', () => {
     const payload = {
       id: 'comment-_pby2_tmXV6bcvcdev8xk',
       username: 'johndoe',
-      date: '2021-08-08T07:22:33.555Z',
+      createdAt: '2021-08-08T08:07:01.522Z',
+      deletedAt: '2021-08-08T08:07:01.522Z',
       replies: [
         {
           id: 'reply-BErOXUSefjwWGW1Z10Ihk',
           content: '**balasan telah dihapus**',
-          date: '2021-08-08T07:59:48.766Z',
+          createdAt: '2021-08-08T08:07:01.522Z',
+          deletedAt: '2021-08-08T08:07:01.522Z',
           username: 'johndoe',
         },
         {
           id: 'reply-xNBtm9HPR-492AeiimpfN',
           content: 'sebuah balasan',
-          date: '2021-08-08T08:07:01.522Z',
+          createdAt: '2021-08-08T08:07:01.522Z',
+          deletedAt: '2021-08-08T08:07:01.522Z',
           username: 'dicoding',
         },
       ],

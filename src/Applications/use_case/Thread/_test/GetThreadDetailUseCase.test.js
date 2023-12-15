@@ -1,78 +1,111 @@
-const GetThread = require('../../../../Domains/threads/entities/GetThread');
+const CommentRepository = require('../../../../Domains/comments/CommentRepository');
+const ReplyRepository = require('../../../../Domains/replies/ReplyRepository');
 const ThreadRepository = require('../../../../Domains/threads/ThreadRepository');
 const GetThreadDetailUseCase = require('../GetThreadDetailUseCase');
 
 describe('GetThreadDetailUseCase', () => {
-  /**
-   * Menguji apakah use case mampu mengoskestrasikan langkah demi langkah dengan benar.
-   */
-  it('should orchestrating the get thread action correctly', async () => {
+  it('should return the thread with comments and replies', async () => {
     // Arrange
-    const useCasePayload = {
-      id: 'thread-h_2FkLZhtgBKY2kh4CC02',
-    };
+    const threadId = 'threadId123';
+    const useCasePayload = { id: threadId };
 
-    const expectedThread = {
-      id: 'thread-h_2FkLZhtgBKY2kh4CC02',
-      title: 'sebuah thread',
-      body: 'sebuah body thread',
-      date: '2021-08-08T07:19:09.775Z',
-      username: 'dicoding',
-      comments: [
-        {
-          id: 'comment-_pby2_tmXV6bcvcdev8xk',
-          username: 'johndoe',
-          date: '2021-08-08T07:22:33.555Z',
-          content: 'sebuah comment',
-        },
-        {
-          id: 'comment-yksuCoxM2s4MMrZJO-qVD',
-          username: 'dicoding',
-          date: '2021-08-08T07:26:21.338Z',
-          content: '**komentar telah dihapus**',
-        },
-      ],
-    };
-
-    /** creating dependency of use case */
     const mockThreadRepository = new ThreadRepository();
+    const mockCommentRepository = new CommentRepository();
+    const mockReplyRepository = new ReplyRepository();
 
-    /** mocking needed function */
-    mockThreadRepository.getThreadById = jest.fn()
-      .mockImplementation(() => Promise.resolve({
-        id: 'thread-h_2FkLZhtgBKY2kh4CC02',
-        title: 'sebuah thread',
-        body: 'sebuah body thread',
-        date: '2021-08-08T07:19:09.775Z',
-        username: 'dicoding',
-        comments: [
-          {
-            id: 'comment-_pby2_tmXV6bcvcdev8xk',
-            username: 'johndoe',
-            date: '2021-08-08T07:22:33.555Z',
-            content: 'sebuah comment',
-          },
-          {
-            id: 'comment-yksuCoxM2s4MMrZJO-qVD',
-            username: 'dicoding',
-            date: '2021-08-08T07:26:21.338Z',
-            content: '**komentar telah dihapus**',
-          },
-        ],
-      }));
+    mockThreadRepository.getThreadById = jest.fn().mockImplementation(() => Promise.resolve({
+      id: threadId,
+      title: 'Thread Title',
+      body: 'Thread Body',
+      created_at: new Date('2023-01-01T00:00:00Z'),
+      username: 'user123',
+    }));
 
-    /** creating use case instance */
-    const getThreadUseCase = new GetThreadDetailUseCase({
+    mockCommentRepository.getCommentsByThreadId = jest.fn()
+      .mockImplementation(() => Promise.resolve([
+        {
+          id: 'commentId1',
+          created_at: new Date('2023-01-02T00:00:00Z'),
+          username: 'user456',
+          content: 'Comment Content',
+          deleted_at: null,
+        },
+        {
+          id: 'commentId2',
+          created_at: new Date('2023-01-03T00:00:00Z'),
+          username: 'user789',
+          content: 'Deleted Comment Content',
+          deleted_at: new Date('2023-01-04T00:00:00Z'), // Set deleted_at to a non-null value
+        },
+      ]));
+
+    mockReplyRepository.getRepliesByCommentId = jest.fn()
+      .mockImplementation((commentId) => {
+        if (commentId === 'commentId1') {
+          return Promise.resolve([
+            {
+              id: 'replyId1',
+              created_at: new Date('2023-01-03T00:00:00Z'),
+              username: 'user789',
+              content: 'Reply Content',
+              deleted_at: null,
+            },
+            {
+              id: 'replyId2',
+              created_at: new Date('2023-01-04T00:00:00Z'),
+              username: 'user789',
+              content: 'Reply Content',
+              deleted_at: new Date('2023-01-05T00:00:00Z'),
+            },
+          ]);
+        }
+        return Promise.resolve([]);
+      });
+
+    const getThreadDetailUseCase = new GetThreadDetailUseCase({
       threadRepository: mockThreadRepository,
+      commentRepository: mockCommentRepository,
+      replyRepository: mockReplyRepository,
     });
 
-    // Action
-    const thread = await getThreadUseCase.execute(useCasePayload);
-    // Assert
-    expect(thread).toStrictEqual(expectedThread);
+    // Act
+    const result = await getThreadDetailUseCase.execute(useCasePayload);
 
-    expect(mockThreadRepository.getThreadById).toBeCalledWith(new GetThread({
-      id: useCasePayload.id,
-    }));
+    // Assert
+    expect(result).toMatchObject({
+      id: threadId,
+      title: 'Thread Title',
+      body: 'Thread Body',
+      username: 'user123',
+      date: 'Sun Jan 01 2023',
+      comments: [
+        {
+          id: 'commentId1',
+          username: 'user456',
+          content: 'Comment Content',
+          date: 'Mon Jan 02 2023',
+          replies: [
+            {
+              id: 'replyId1',
+              username: 'user789',
+              content: 'Reply Content',
+              date: 'Tue Jan 03 2023',
+            }, {
+              id: 'replyId2',
+              username: 'user789',
+              content: '**balasan telah dihapus**',
+              date: 'Wed Jan 04 2023',
+            },
+          ],
+        },
+        {
+          id: 'commentId2',
+          username: 'user789',
+          content: '**komentar telah dihapus**', // Expect the content to be overwritten
+          date: 'Tue Jan 03 2023',
+          replies: [],
+        },
+      ],
+    });
   });
 });

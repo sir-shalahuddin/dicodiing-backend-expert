@@ -4,6 +4,7 @@ const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper
 const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
 const AddedThread = require('../../../Domains/threads/entities/AddedThread');
 const ThreadRepositoryPostgres = require('../ThreadRepositoryPostgres');
+const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
 
 describe('ThreadRepositoryPostgres', () => {
   afterEach(async () => {
@@ -61,7 +62,7 @@ describe('ThreadRepositoryPostgres', () => {
   describe('getThreadById function', () => {
     it('should return Thread correctly with comments and replies', async () => {
       // Arrange
-      const threadId = { id: 'thread-123' };
+      const threadId = 'thread-123'; // Corrected: pass a string, not an object
       const userRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
 
       // Mocking the "threads" table state
@@ -76,10 +77,18 @@ describe('ThreadRepositoryPostgres', () => {
         id: 'thread-123',
         title: 'Example Title',
         body: 'Example Body',
-        date: expect.any(String),
-        username: 'dicoding', // Adjust based on your logic
-        comments: [],
+        created_at: expect.any(Object),
+        username: 'dicoding',
       });
+    });
+    it('should throw NotFoundError when thread is not found', async () => {
+      // Arrange
+      const nonExistentThreadId = 'non-existent-thread-id';
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
+
+      // Action and Assert
+      await expect(threadRepositoryPostgres.getThreadById(nonExistentThreadId))
+        .rejects.toThrow(NotFoundError);
     });
   });
 });

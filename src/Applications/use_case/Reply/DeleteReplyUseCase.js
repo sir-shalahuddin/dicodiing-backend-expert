@@ -1,3 +1,4 @@
+const AuthorizationError = require('../../../Commons/exceptions/AuthorizationError');
 const DeleteReply = require('../../../Domains/replies/entities/DeleteReply');
 
 class DeleteReplyUseCase {
@@ -7,8 +8,12 @@ class DeleteReplyUseCase {
 
   async execute(useCasePayload) {
     const deleteReply = new DeleteReply(useCasePayload);
+
     const validOwner = await this._replyRepository.getOwner(deleteReply.replyId);
-    return this._replyRepository.deleteReplyById(deleteReply, validOwner);
+    if (deleteReply.user !== validOwner) {
+      throw new AuthorizationError('kamu tidak berhak');
+    }
+    return this._replyRepository.deleteReplyById(deleteReply.replyId);
   }
 }
 

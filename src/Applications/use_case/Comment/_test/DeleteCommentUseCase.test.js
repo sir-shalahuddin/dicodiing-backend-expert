@@ -1,12 +1,10 @@
-const DeleteComment = require('../../../../Domains/comments/entities/DeleteComment');
+const AuthorizationError = require('../../../../Commons/exceptions/AuthorizationError');
+const NotFoundError = require('../../../../Commons/exceptions/NotFoundError');
 const CommentRepository = require('../../../../Domains/comments/CommentRepository');
 const DeleteCommentUseCase = require('../DeleteCommentUseCase');
 
 describe('DeleteCommentUseCase', () => {
-  /**
-     * Menguji apakah use case mampu mengoskestrasikan langkah demi langkah dengan benar.
-     */
-  it('should orchestrating the delete comment action correctly', async () => {
+  it('should orchestrate the delete comment action correctly', async () => {
     // Arrange
     const useCasePayload = {
       commentId: 'comment-_pby2_tmXV6bcvcdev8xk',
@@ -14,16 +12,14 @@ describe('DeleteCommentUseCase', () => {
       threadId: 'thread-h_W1Plfpj0TY7wyT2PUPX',
     };
 
-    /** creating dependency of use case */
+    // Creating a mock comment repository
     const mockCommentRepository = new CommentRepository();
 
-    /** mocking needed function */
-    mockCommentRepository.checkValidId = jest.fn()
-      .mockImplementation(() => Promise.resolve('user-CrkY5iAgOdMqv36bIvys2'));
-    mockCommentRepository.deleteCommentById = jest.fn()
-      .mockImplementation(() => Promise.resolve());
+    // Mocking needed functions
+    mockCommentRepository.checkValidId = jest.fn().mockResolvedValue('user-CrkY5iAgOdMqv36bIvys2');
+    mockCommentRepository.deleteCommentById = jest.fn().mockResolvedValue();
 
-    /** creating use case instance */
+    // Creating the use case instance
     const deleteCommentUseCase = new DeleteCommentUseCase({
       commentRepository: mockCommentRepository,
     });
@@ -32,12 +28,60 @@ describe('DeleteCommentUseCase', () => {
     await deleteCommentUseCase.execute(useCasePayload);
 
     // Assert
-    expect(mockCommentRepository.checkValidId)
-      .toHaveBeenCalledWith(useCasePayload.commentId);
-    expect(mockCommentRepository.deleteCommentById).toBeCalledWith(new DeleteComment({
-      commentId: useCasePayload.commentId,
-      owner: useCasePayload.owner,
-      threadId: useCasePayload.threadId,
-    }), 'user-CrkY5iAgOdMqv36bIvys2');
+    expect(mockCommentRepository.checkValidId).toHaveBeenCalledWith(useCasePayload.commentId);
+    expect(mockCommentRepository.deleteCommentById).toHaveBeenCalledWith(useCasePayload.commentId);
+  });
+
+  it('should throw AuthorizationError when the comment owner is not valid', async () => {
+    // Arrange
+    const useCasePayload = {
+      commentId: 'comment-_pby2_tmXV6bcvcdev8xk',
+      owner: 'invalid-owner-id',
+      threadId: 'thread-h_W1Plfpj0TY7wyT2PUPX',
+    };
+
+    // Creating a mock comment repository
+    const mockCommentRepository = new CommentRepository();
+
+    // Mocking needed functions to simulate invalid owner
+    mockCommentRepository.checkValidId = jest.fn().mockResolvedValue('different-owner-id');
+
+    // Creating the use case instance
+    const deleteCommentUseCase = new DeleteCommentUseCase({
+      commentRepository: mockCommentRepository,
+    });
+
+    // Action and Assert
+    await expect(deleteCommentUseCase.execute(useCasePayload))
+      .rejects.toThrowError(AuthorizationError);
+
+    // Ensure that checkValidId was called with the correct commentId
+    expect(mockCommentRepository.checkValidId).toHaveBeenCalledWith(useCasePayload.commentId);
+  });
+
+  it('should throw NotFoundError when checkValidId throws an error', async () => {
+    // Arrange
+    const useCasePayload = {
+      commentId: 'comment-_pby2_tmXV6bcvcdev8xk',
+      owner: 'user-CrkY5iAgOdMqv36bIvys2',
+      threadId: 'thread-h_W1Plfpj0TY7wyT2PUPX',
+    };
+
+    // Creating a mock comment repository
+    const mockCommentRepository = new CommentRepository();
+
+    // Mocking checkValidId to throw an error
+    mockCommentRepository.checkValidId = jest.fn().mockRejectedValue(new Error('Some error'));
+
+    // Creating the use case instance
+    const deleteCommentUseCase = new DeleteCommentUseCase({
+      commentRepository: mockCommentRepository,
+    });
+
+    // Action and Assert
+    await expect(deleteCommentUseCase.execute(useCasePayload)).rejects.toThrowError(NotFoundError);
+
+    // Ensure that checkValidId was called with the correct commentId
+    expect(mockCommentRepository.checkValidId).toHaveBeenCalledWith(useCasePayload.commentId);
   });
 });

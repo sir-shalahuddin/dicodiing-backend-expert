@@ -1,7 +1,6 @@
 const AddedComment = require('../../Domains/comments/entities/AddedComment');
 const CommentRepository = require('../../Domains/comments/CommentRepository');
 const NotFoundError = require('../../Commons/exceptions/NotFoundError');
-const AuthorizationError = require('../../Commons/exceptions/AuthorizationError');
 
 class CommentRepositoryPostgres extends CommentRepository {
   constructor(pool, idGenerator) {
@@ -18,14 +17,8 @@ class CommentRepositoryPostgres extends CommentRepository {
       values: [id, owner, content, threadId],
     };
 
-    try {
-      const result = await this._pool.query(query);
-      return new AddedComment({ ...result.rows[0] });
-    } catch (error) {
-      if (error.code === '23503') {
-        throw new NotFoundError('Thread tidak ditemukan');
-      } else throw error;
-    }
+    const result = await this._pool.query(query);
+    return new AddedComment({ ...result.rows[0] });
   }
 
   async checkValidId(commentId) {
@@ -41,21 +34,34 @@ class CommentRepositoryPostgres extends CommentRepository {
     return result.rows[0].owner;
   }
 
-  async deleteCommentById(deleteComment, validOwner) {
-    const { owner, threadId, commentId } = deleteComment;
-
-    if (owner !== validOwner) throw new AuthorizationError('kamu tidak berhak');
-
+  async getCommentsByThreadId(threadId) {
     const query = {
-      text: 'UPDATE comments SET deleted_at=NOW() WHERE deleted_at IS NULL AND owner=$1 AND thread_id=$2 AND "id"=$3',
-      values: [owner, threadId, commentId],
+      text: `
+      SELECT comments.id,users.username,comments.created_at,comments.deleted_at,comments.content  
+      FROM comments
+      JOIN threads ON comments.thread_id = threads.id 
+      JOIN users ON users.id=comments.owner 
+      where comments.thread_id = $1
+      ORDER BY comments.created_at
+      `,
+      values: [threadId],
     };
 
     const result = await this._pool.query(query);
-    if (result.rowCount === 0) {
-      throw new NotFoundError('Komentar sudah dihapus');
+
+    return result.rows || [];
+  }
+
+  async deleteCommentById(commentId) {
+    const query = {
+      text: 'UPDATE comments SET deleted_at=NOW() WHERE deleted_at IS NULL AND "id"=$1',
+      values: [commentId],
+    };
+    const result = await this._pool.query(query);
+    if (result.rowCount > 0) {
+      return 'success';
     }
-    return 'success';
+    return 'failure';
   }
 }
 

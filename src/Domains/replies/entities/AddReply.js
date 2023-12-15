@@ -16,7 +16,6 @@ class AddReply {
   _verifyPayload({
     content, owner, threadId, commentId,
   }) {
-    // console.log( content, owner, threadId, commentId)
     if (!content || !owner || !threadId || !commentId) {
       throw new Error('ADD_REPLY.NOT_CONTAIN_NEEDED_PROPERTY');
     }

@@ -19,8 +19,9 @@ describe('a Detailed Thread entities', () => {
     const payload = {
       id: 123,
       username: 'johndoe',
-      date: '2021-08-08T07:22:33.555Z',
-      content: 'sebuah reply',
+      createdAt: '2021-08-08T07:22:33.555Z',
+      deletedAt: '2021-08-08T07:22:33.555Z',
+      content: 'bsbadjbjkasd',
     };
 
     // Action and Assert
@@ -32,7 +33,8 @@ describe('a Detailed Thread entities', () => {
     const payload = {
       id: 'reply-_pby2_tmXV6bcvcdev8xk',
       username: 'johndoe',
-      date: '2021-08-08T07:22:33.555Z',
+      createdAt: '2021-08-08T08:07:01.522Z',
+      deletedAt: '2021-08-08T08:07:01.522Z',
       content: 'sebuah reply',
     };
 

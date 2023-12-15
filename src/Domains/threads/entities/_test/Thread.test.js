@@ -7,7 +7,7 @@ describe('a Detailed Thread entities', () => {
       id: 'thread-h_2FkLZhtgBKY2kh4CC02',
       title: 'sebuah thread',
       body: 'sebuah body thread',
-      date: '2021-08-08T07:19:09.775Z',
+      createdAt: '2021-08-08T07:19:09.775Z',
       username: 'dicoding',
     };
 
@@ -21,7 +21,7 @@ describe('a Detailed Thread entities', () => {
       id: 123,
       title: 'sebuah thread',
       body: 'sebuah body thread',
-      date: '2021-08-08T07:19:09.775Z',
+      createdAt: '2021-08-08T07:19:09.775Z',
       username: 'dicoding',
       comments: [],
     };
@@ -36,7 +36,7 @@ describe('a Detailed Thread entities', () => {
       id: 'thread-h_2FkLZhtgBKY2kh4CC02',
       title: 'sebuah thread',
       body: 'sebuah body thread',
-      date: '2021-08-08T07:19:09.775Z',
+      createdAt: '2021-08-08T07:19:09.775Z',
       username: 'dicoding',
       comments: [],
     };

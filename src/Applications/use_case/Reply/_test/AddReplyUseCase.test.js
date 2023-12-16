@@ -1,8 +1,10 @@
 const AddReply = require('../../../../Domains/replies/entities/AddReply');
 const AddedReply = require('../../../../Domains/replies/entities/AddedReply');
 const ReplyRepository = require('../../../../Domains/replies/ReplyRepository');
+const CommentRepository = require('../../../../Domains/comments/CommentRepository');
+const ThreadRepository = require('../../../../Domains/threads/ThreadRepository');
+
 const AddReplyUseCase = require('../AddReplyUseCase');
-const NotFoundError = require('../../../../Commons/exceptions/NotFoundError');
 
 describe('AddReplyUseCase', () => {
   /**
@@ -11,78 +13,51 @@ describe('AddReplyUseCase', () => {
   it('should orchestrating the add reply action correctly', async () => {
     // Arrange
     const useCasePayload = {
-      content: 'sebuah reply',
-      owner: 'me',
+      content: 'some reply from me',
+      owner: 'user-123',
       threadId: 'thread-123',
-      commentId: 'comment-456',
+      commentId: 'comment-123',
     };
 
     const mockAddedReply = new AddedReply({
-      id: 'reply-_pby2_tmXV6bcvcdev8xk',
+      id: 'reply-123',
       content: useCasePayload.content,
       owner: useCasePayload.owner,
     });
 
     /** creating dependency of use case */
+    // replyRepository, commentRepository, threadRepository
     const mockReplyRepository = new ReplyRepository();
+    const mockCommentRepository = new CommentRepository();
+    const mockThreadRepository = new ThreadRepository();
 
     /** mocking needed function */
-    mockReplyRepository.checkValidId = jest.fn()
-      .mockImplementation(() => Promise.resolve(true));
+    mockThreadRepository.checkValidId = jest.fn()
+      .mockImplementation(() => Promise.resolve());
+    mockCommentRepository.checkValidId = jest.fn()
+      .mockImplementation(() => Promise.resolve());
     mockReplyRepository.addReply = jest.fn()
       .mockImplementation(() => Promise.resolve(mockAddedReply));
 
     /** creating use case instance */
-    const getReplyUseCase = new AddReplyUseCase({
+    const addReplyUseCase = new AddReplyUseCase({
       replyRepository: mockReplyRepository,
+      commentRepository: mockCommentRepository,
+      threadRepository: mockThreadRepository,
     });
 
     // Action
-    const addedReply = await getReplyUseCase.execute(useCasePayload);
+    const addedReply = await addReplyUseCase.execute(useCasePayload);
 
     // Assert
     expect(addedReply).toStrictEqual(new AddedReply({
-      id: 'reply-_pby2_tmXV6bcvcdev8xk',
+      id: 'reply-123',
       content: useCasePayload.content,
       owner: useCasePayload.owner,
     }));
 
-    expect(mockReplyRepository.addReply).toBeCalledWith(new AddReply({
-      content: 'sebuah reply',
-      owner: 'me',
-      threadId: 'thread-123',
-      commentId: 'comment-456',
-    }));
-  });
-
-  it('should throw NotFoundError when checkValidId returns false', async () => {
-    // Arrange
-    const useCasePayload = {
-      content: 'sebuah reply',
-      owner: 'me',
-      threadId: 'thread-123',
-      commentId: 'comment-456',
-    };
-
-    /** creating dependency of use case */
-    const mockReplyRepository = new ReplyRepository();
-
-    /** mocking needed function to simulate checkValidId returning false */
-    mockReplyRepository.checkValidId = jest.fn()
-      .mockImplementation(() => Promise.resolve(false));
-
-    /** creating use case instance */
-    const getReplyUseCase = new AddReplyUseCase({
-      replyRepository: mockReplyRepository,
-    });
-
-    // Action and Assert
-    await expect(getReplyUseCase.execute(useCasePayload)).rejects.toThrowError(NotFoundError);
-
-    // Ensure that checkValidId was called with the correct parameters
-    expect(mockReplyRepository.checkValidId).toHaveBeenCalledWith(
-      useCasePayload.threadId,
-      useCasePayload.commentId,
-    );
+    expect(mockThreadRepository.checkValidId).toBeCalledWith(useCasePayload.threadId);
+    expect(mockCommentRepository.checkValidId).toBeCalledWith(useCasePayload.commentId);
+    expect(mockReplyRepository.addReply).toBeCalledWith(new AddReply(useCasePayload));
   });
 });

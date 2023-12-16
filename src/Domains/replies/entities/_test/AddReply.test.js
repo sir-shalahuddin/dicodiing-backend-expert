@@ -38,5 +38,8 @@ describe('a Reply entities', () => {
 
     // Assert
     expect(addReply.content).toEqual(payload.content);
+    expect(addReply.commentId).toEqual(payload.commentId);
+    expect(addReply.owner).toEqual(payload.owner);
+    expect(addReply.threadId).toEqual(payload.threadId);
   });
 });

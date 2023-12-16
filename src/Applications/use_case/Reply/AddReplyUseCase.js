@@ -1,18 +1,22 @@
-const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
 const AddReply = require('../../../Domains/replies/entities/AddReply');
 
 class AddReplyUseCase {
-  constructor({ replyRepository }) {
+  constructor({ replyRepository, commentRepository, threadRepository }) {
     this._replyRepository = replyRepository;
+    this._commentRepository = commentRepository;
+    this._threadRepository = threadRepository;
   }
 
   async execute(useCasePayload) {
     const addReply = new AddReply(useCasePayload);
 
-    const valid = await this._replyRepository.checkValidId(addReply.threadId, addReply.commentId);
-    if (!valid) {
-      throw new NotFoundError('Thread atau Komentar tidak ditemukan');
-    }
+    // check thread availabilty
+    await this._threadRepository.checkValidId(addReply.threadId);
+
+    // check comment aiablabilty
+    await this._commentRepository.checkValidId(addReply.commentId);
+
+    // add reply
     return this._replyRepository.addReply(addReply);
   }
 }

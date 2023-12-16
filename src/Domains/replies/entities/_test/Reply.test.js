@@ -46,5 +46,7 @@ describe('a Detailed Thread entities', () => {
     expect(getThreadById.date).toEqual(payload.date);
     expect(getThreadById.username).toEqual(payload.username);
     expect(getThreadById.content).toEqual(payload.content);
+    expect(getThreadById.createdAt).toEqual(payload.createdAt);
+    expect(getThreadById.deletedAt).toEqual(payload.deletedAt);
   });
 });

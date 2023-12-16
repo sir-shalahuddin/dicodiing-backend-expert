@@ -91,4 +91,29 @@ describe('ThreadRepositoryPostgres', () => {
         .rejects.toThrow(NotFoundError);
     });
   });
+
+  describe('checkValidId function', () => {
+    it('should not throw an error when thread is found', async () => {
+      // Arrange
+      const existingThreadId = 'thread-123';
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
+      await UsersTableTestHelper.addUser({});
+
+      // Mocking the "threads" table state
+      await ThreadsTableTestHelper.addThread({ id: existingThreadId });
+
+      // Action and Assert
+      await expect(threadRepositoryPostgres.checkValidId(existingThreadId)).resolves.not.toThrow();
+    });
+
+    it('should throw NotFoundError when thread is not found', async () => {
+      // Arrange
+      const nonExistentThreadId = 'non-existent-thread-id';
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
+
+      // Action and Assert
+      await expect(threadRepositoryPostgres.checkValidId(nonExistentThreadId))
+        .rejects.toThrow(NotFoundError);
+    });
+  });
 });

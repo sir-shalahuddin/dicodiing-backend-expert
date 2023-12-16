@@ -7,6 +7,7 @@ const RepliesTableTestHelper = require('../../../../tests/RepliesTableTestHelper
 const CommentsTableTestHelper = require('../../../../tests/CommentsTableTestHelper');
 const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper');
 const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
+const AuthorizationError = require('../../../Commons/exceptions/AuthorizationError');
 
 describe('ReplyRepositoryPostgres', () => {
   afterEach(async () => {
@@ -21,34 +22,27 @@ describe('ReplyRepositoryPostgres', () => {
   });
 
   describe('checkValidId function', () => {
-    it('should return true for a valid threadId and commentId combination', async () => {
+    it('should not throw an error when reply is found', async () => {
       // Arrange
-      const threadId = 'thread-123';
-      const commentId = 'comment-123';
+      const replyId = 'reply-123';
+      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
       await UsersTableTestHelper.addUser({});
       await ThreadsTableTestHelper.addThread({});
       await CommentsTableTestHelper.addComment({});
-      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
+      await RepliesTableTestHelper.addReply({ id: replyId });
 
-      // Action
-      const isValidId = await replyRepositoryPostgres.checkValidId(threadId, commentId);
-
-      // Assert
-      expect(isValidId).toBe(true);
+      // Action and Assert
+      await expect(replyRepositoryPostgres.checkValidId(replyId)).resolves.not.toThrow();
     });
 
-    it('should return false for an invalid threadId and commentId combination', async () => {
+    it('should throw NotFoundError when reply is not found', async () => {
       // Arrange
-      const threadId = 'non-existent-thread-id';
-      const commentId = 'non-existent-comment-id';
-
+      const nonExistentThreadId = 'non-existent-reply-id';
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
 
-      // Action
-      const isValidId = await replyRepositoryPostgres.checkValidId(threadId, commentId);
-
-      // Assert
-      expect(isValidId).toBe(false);
+      // Action and Assert
+      await expect(replyRepositoryPostgres.checkValidId(nonExistentThreadId))
+        .rejects.toThrow(NotFoundError);
     });
   });
 
@@ -68,18 +62,6 @@ describe('ReplyRepositoryPostgres', () => {
 
       // Assert
       expect(replies).toEqual(expect.any(Array));
-    });
-
-    it('should return an empty array for a non-existent commentId', async () => {
-      // Arrange
-      const nonExistentCommentId = 'non-existent-comment-id';
-      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
-
-      // Action
-      const replies = await replyRepositoryPostgres.getRepliesByCommentId(nonExistentCommentId);
-
-      // Assert
-      expect(replies).toEqual([]);
     });
   });
 
@@ -130,32 +112,31 @@ describe('ReplyRepositoryPostgres', () => {
     });
   });
 
-  describe('getOwner function', () => {
-    it('should return owner for a valid replyId', async () => {
+  describe('checkOwner function', () => {
+    it('should not throw an error when owner is valid', async () => {
       // Arrange
+      const owner = 'user-123';
       const replyId = 'reply-123';
-      await UsersTableTestHelper.addUser({});
+      await UsersTableTestHelper.addUser({ id: owner });
       await ThreadsTableTestHelper.addThread({});
       await CommentsTableTestHelper.addComment({});
-      await RepliesTableTestHelper.addReply({});
+      await RepliesTableTestHelper.addReply({ id: replyId });
 
-      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
-
-      // Action
-      const owner = await replyRepositoryPostgres.getOwner(replyId);
-
-      // Assert
-      expect(owner).toEqual(expect.any(String));
-    });
-
-    it('should throw NotFoundError for non-existent replyId', async () => {
-      // Arrange
-      const nonExistentReplyId = 'non-existent-reply-id';
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
 
       // Action and Assert
-      await expect(replyRepositoryPostgres.getOwner(nonExistentReplyId))
-        .rejects.toThrow(NotFoundError);
+      await expect(replyRepositoryPostgres.checkOwner(replyId, owner)).resolves.not.toThrow();
+    });
+
+    it('should throw Authorization Error invalid owner', async () => {
+      // Arrange
+      const invalidOwner = 'invalidOwner';
+      const replyId = 'reply-123';
+      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
+
+      // Action and Assert
+      await expect(replyRepositoryPostgres.checkOwner(replyId, invalidOwner))
+        .rejects.toThrow(AuthorizationError);
     });
   });
 

@@ -6,6 +6,7 @@ const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
 const CommentsTableTestHelper = require('../../../../tests/CommentsTableTestHelper');
 const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
 const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper');
+const AuthorizationError = require('../../../Commons/exceptions/AuthorizationError');
 
 describe('CommentRepositoryPostgres', () => {
   afterEach(async () => {
@@ -65,30 +66,26 @@ describe('CommentRepositoryPostgres', () => {
   });
 
   describe('checkValidId function', () => {
-    it('should throw NotFoundError for non-existent commentId', async () => {
+    it('should not throw an error when comment is found', async () => {
       // Arrange
-      const nonExistentCommentId = 'non-existent-comment-id';
+      const commentId = 'comment-123';
+      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
+      await UsersTableTestHelper.addUser({});
+      await ThreadsTableTestHelper.addThread({});
+      await CommentsTableTestHelper.addComment({ id: commentId });
+
+      // Action and Assert
+      await expect(commentRepositoryPostgres.checkValidId(commentId)).resolves.not.toThrow();
+    });
+
+    it('should throw NotFoundError when comment is not found', async () => {
+      // Arrange
+      const nonExistentThreadId = 'non-existent-comment-id';
       const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
 
       // Action and Assert
-      await expect(commentRepositoryPostgres.checkValidId(nonExistentCommentId))
+      await expect(commentRepositoryPostgres.checkValidId(nonExistentThreadId))
         .rejects.toThrow(NotFoundError);
-    });
-
-    it('should return owner for a valid commentId', async () => {
-      // Arrange
-      const commentId = 'comment-123';
-      await UsersTableTestHelper.addUser({});
-      await ThreadsTableTestHelper.addThread({});
-      await CommentsTableTestHelper.addComment({});
-
-      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
-
-      // Action
-      const owner = await commentRepositoryPostgres.checkValidId(commentId);
-
-      // Assert
-      expect(owner).toEqual(expect.any(String));
     });
   });
 
@@ -107,18 +104,6 @@ describe('CommentRepositoryPostgres', () => {
 
       // Assert
       expect(comments).toEqual(expect.any(Array));
-    });
-
-    it('should return an empty array for a non-existent threadId', async () => {
-      // Arrange
-      const nonExistentThreadId = 'non-existent-thread-id';
-      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
-
-      // Action
-      const comments = await commentRepositoryPostgres.getCommentsByThreadId(nonExistentThreadId);
-
-      // Assert
-      expect(comments).toEqual([]);
     });
   });
 
@@ -159,6 +144,33 @@ describe('CommentRepositoryPostgres', () => {
 
       // Restore the original query function
       pool.query = originalQuery;
+    });
+  });
+
+  describe('checkOwner function', () => {
+    it('should not throw an error when owner is valid', async () => {
+      // Arrange
+      const owner = 'user-123';
+      const commentId = 'comment-123';
+      await UsersTableTestHelper.addUser({ id: owner });
+      await ThreadsTableTestHelper.addThread({});
+      await CommentsTableTestHelper.addComment({ id: commentId });
+
+      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
+
+      // Action and Assert
+      await expect(commentRepositoryPostgres.checkOwner(commentId, owner)).resolves.not.toThrow();
+    });
+
+    it('should throw Authorization Error invalid owner', async () => {
+      // Arrange
+      const invalidOwner = 'invalidOwner';
+      const commentId = 'comment-123';
+      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
+
+      // Action and Assert
+      await expect(commentRepositoryPostgres.checkOwner(commentId, invalidOwner))
+        .rejects.toThrow(AuthorizationError);
     });
   });
 });

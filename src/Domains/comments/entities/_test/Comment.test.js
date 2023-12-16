@@ -92,5 +92,7 @@ describe('a Comment entities', () => {
     expect(getThreadById.username).toEqual(payload.username);
     expect(getThreadById.content).toEqual(payload.content);
     expect(getThreadById.replies).toEqual(payload.replies);
+    expect(getThreadById.createdAt).toEqual(payload.createdAt);
+    expect(getThreadById.deletedAt).toEqual(payload.deletedAt);
   });
 });

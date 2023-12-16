@@ -16,7 +16,6 @@ describe('a Comment entities', () => {
     const payload = {
       commentId: 123,
       owner: true,
-      threadId: 123,
     };
 
     // Action and Assert
@@ -28,7 +27,6 @@ describe('a Comment entities', () => {
     const payload = {
       commentId: 'comment-_pby2_tmXV6bcvcdev8xk',
       owner: 'user-CrkY5iAgOdMqv36bIvys2',
-      threadId: 'thread-h_W1Plfpj0TY7wyT2PUPX',
     };
 
     // Action
@@ -37,6 +35,5 @@ describe('a Comment entities', () => {
     // Assert
     expect(deleteComment.commentId).toEqual(payload.commentId);
     expect(deleteComment.owner).toEqual(payload.owner);
-    expect(deleteComment.threadId).toEqual(payload.threadId);
   });
 });

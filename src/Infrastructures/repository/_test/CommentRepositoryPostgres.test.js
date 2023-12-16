@@ -93,9 +93,13 @@ describe('CommentRepositoryPostgres', () => {
     it('should return an array of comments for a valid threadId', async () => {
       // Arrange
       const threadId = 'thread-123';
-      await UsersTableTestHelper.addUser({});
-      await ThreadsTableTestHelper.addThread({});
-      await CommentsTableTestHelper.addComment({});
+      const commentId = 'comment-123';
+      const user = 'user-123';
+      const username = 'saya sendiri';
+      const content = 'ini komen';
+      await UsersTableTestHelper.addUser({ id: user, username });
+      await ThreadsTableTestHelper.addThread({ id: threadId });
+      await CommentsTableTestHelper.addComment({ id: commentId, content });
 
       const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
 
@@ -104,6 +108,14 @@ describe('CommentRepositoryPostgres', () => {
 
       // Assert
       expect(comments).toEqual(expect.any(Array));
+      expect(comments).toHaveLength(1);
+      expect(comments[0]).toEqual({
+        id: commentId,
+        username,
+        created_at: expect.any(Date),
+        deleted_at: null,
+        content,
+      });
     });
   });
 
@@ -115,25 +127,21 @@ describe('CommentRepositoryPostgres', () => {
       await ThreadsTableTestHelper.addThread({});
       await CommentsTableTestHelper.addComment({ id: commentId });
 
-      const originalQuery = pool.query;
-      pool.query = jest.fn().mockResolvedValue({ rowCount: 1 });
       const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
 
       // Action
       const result = await commentRepositoryPostgres.deleteCommentById(commentId);
 
       // Assert
+      const comment = await CommentsTableTestHelper.findCommentById(commentId);
+      expect(comment[0].deleted_at).toEqual(expect.any(Date));
       expect(result).toBe('success');
-
-      // Restore the original query function
-      pool.query = originalQuery;
     });
 
     it('should return "failure" for a non-existent commentId', async () => {
       // Arrange
       const nonExistentCommentId = 'non-existent-comment-id';
-      const originalQuery = pool.query;
-      pool.query = jest.fn().mockResolvedValue({ rowCount: 0 });
+
       const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
 
       // Action
@@ -141,9 +149,6 @@ describe('CommentRepositoryPostgres', () => {
 
       // Assert
       expect(result).toBe('failure');
-
-      // Restore the original query function
-      pool.query = originalQuery;
     });
   });
 

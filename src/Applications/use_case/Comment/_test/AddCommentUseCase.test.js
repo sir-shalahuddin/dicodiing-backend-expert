@@ -20,7 +20,6 @@ describe('AddCommentUseCase', () => {
     });
 
     /** creating dependency of use case */
-    // replyRepository, commentRepository, threadRepository
     const mockCommentRepository = new CommentRepository();
     const mockThreadRepository = new ThreadRepository();
 

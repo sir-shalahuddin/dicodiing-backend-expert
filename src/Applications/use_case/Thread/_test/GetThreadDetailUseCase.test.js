@@ -107,5 +107,11 @@ describe('GetThreadDetailUseCase', () => {
         },
       ],
     });
+    expect(mockThreadRepository.getThreadById).toBeCalledWith(threadId);
+    expect(mockCommentRepository.getCommentsByThreadId).toBeCalledWith(threadId);
+    for (let index = 1; index <= 2; index += 1) {
+      expect(mockReplyRepository.getRepliesByCommentId).toBeCalledWith(`commentId${index}`);
+    }
+    expect(mockReplyRepository.getRepliesByCommentId).toBeCalledTimes(2);
   });
 });

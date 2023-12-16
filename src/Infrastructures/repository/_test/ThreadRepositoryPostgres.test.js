@@ -77,7 +77,7 @@ describe('ThreadRepositoryPostgres', () => {
         id: 'thread-123',
         title: 'Example Title',
         body: 'Example Body',
-        created_at: expect.any(Object),
+        created_at: expect.any(Date),
         username: 'dicoding',
       });
     });

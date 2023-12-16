@@ -49,11 +49,16 @@ describe('ReplyRepositoryPostgres', () => {
   describe('getRepliesByCommentId function', () => {
     it('should return an array of replies for a valid commentId', async () => {
       // Arrange
+      const replyId = 'reply-123';
       const commentId = 'comment-123';
-      await UsersTableTestHelper.addUser({});
-      await ThreadsTableTestHelper.addThread({});
-      await CommentsTableTestHelper.addComment({});
-      await RepliesTableTestHelper.addReply({});
+      const threadId = 'thread-123';
+      const user = 'user-123';
+      const username = 'saya sendiri';
+      const content = 'ini reply';
+      await UsersTableTestHelper.addUser({ id: user, username });
+      await ThreadsTableTestHelper.addThread({ id: threadId });
+      await CommentsTableTestHelper.addComment({ id: commentId });
+      await RepliesTableTestHelper.addReply({ id: replyId, content });
 
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
 
@@ -62,6 +67,14 @@ describe('ReplyRepositoryPostgres', () => {
 
       // Assert
       expect(replies).toEqual(expect.any(Array));
+      expect(replies).toHaveLength(1);
+      expect(replies[0]).toEqual({
+        id: replyId,
+        username,
+        created_at: expect.any(Date),
+        deleted_at: null,
+        content,
+      });
     });
   });
 
@@ -105,7 +118,7 @@ describe('ReplyRepositoryPostgres', () => {
 
       // Assert
       expect(addedReply).toEqual(new AddedReply({
-        id: 'reply-123', // Adjust based on your logic
+        id: 'reply-123',
         content: addReplyData.content,
         owner: addReplyData.owner,
       }));
@@ -155,6 +168,8 @@ describe('ReplyRepositoryPostgres', () => {
       const result = await replyRepositoryPostgres.deleteReplyById(replyId);
 
       // Assert
+      const reply = await RepliesTableTestHelper.findReplyById(replyId);
+      expect(reply[0].deleted_at).toEqual(expect.any(Date));
       expect(result).toBe('success');
     });
 

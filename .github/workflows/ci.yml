@@ -43,18 +43,20 @@ jobs:
             >&2 echo "PostgreSQL was not ready within the given timeframe"
             exit 1
         fi
+    
+    - name: Create .env file
+      run: |
+        echo "PGHOST_TEST=localhost" >> .env
+        echo "PGUSER_TEST=${{ secrets.PGUSER_TEST }}" >> .env
+        echo "PGDATABASE_TEST=${{ secrets.PGDATABASE_TEST }}" >> .env
+        echo "PGPASSWORD_TEST=${{ secrets.PGPASSWORD_TEST }}" >> .env
+        echo "PGPORT_TEST=5432" >> .env
+        echo "ACCESS_TOKEN_KEY=${{ secrets.ACCESS_TOKEN_KEY }}" >> .env
+        echo "REFRESH_TOKEN_KEY=${{ secrets.REFRESH_TOKEN_KEY }}" >> .env
+    
     - name: npm install migrate and test
       run: |
         cat .env
         npm install
         npm run migrate up
         npm run test
-      env:
-        CI: true
-        PGHOST_TEST: localhost
-        PGUSER_TEST: ${{ secrets.PGUSER_TEST }}
-        PGDATABASE_TEST: ${{ secrets.PGDATABASE_TEST }}
-        PGPASSWORD_TEST: ${{ secrets.PGPASSWORD_TEST }}
-        PGPORT_TEST: '5432'
-        ACCESS_TOKEN_KEY: ${{ secrets.ACCESS_TOKEN_KEY }}
-        REFRESH_TOKEN_KEY: ${{ secrets.REFRESH_TOKEN_KEY }}

@@ -14,12 +14,12 @@ class CommentRepositoryPostgres extends CommentRepository {
     const { content, owner, threadId } = addComment;
     const id = `comment-${this._idGenerator()}`;
     const query = {
-      text: 'INSERT INTO comments (id, owner, created_at, content, thread_id) VALUES ($1, $2, NOW(), $3, $4) RETURNING id, content, owner',
+      text: 'INSERT INTO comments (id, owner, content, thread_id) VALUES ($1, $2, $3, $4) RETURNING id, content, owner',
       values: [id, owner, content, threadId],
     };
 
     const result = await this._pool.query(query);
-    return new AddedComment({ ...result.rows[0] });
+    return new AddedComment(result.rows[0]);
   }
 
   async checkValidId(commentId) {
@@ -42,7 +42,7 @@ class CommentRepositoryPostgres extends CommentRepository {
 
     const result = await this._pool.query(query);
 
-    if (result.rows.length === 0) {
+    if (!result.rowCount) {
       throw new AuthorizationError('Kamu tidak berhak');
     }
   }

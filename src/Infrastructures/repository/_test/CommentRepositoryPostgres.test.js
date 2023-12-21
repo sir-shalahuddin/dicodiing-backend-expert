@@ -75,7 +75,8 @@ describe('CommentRepositoryPostgres', () => {
       await CommentsTableTestHelper.addComment({ id: commentId });
 
       // Action and Assert
-      await expect(commentRepositoryPostgres.checkValidId(commentId)).resolves.not.toThrow();
+      await expect(commentRepositoryPostgres.checkValidId(commentId))
+        .resolves.not.toThrow(NotFoundError);
     });
 
     it('should throw NotFoundError when comment is not found', async () => {
@@ -164,7 +165,8 @@ describe('CommentRepositoryPostgres', () => {
       const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
 
       // Action and Assert
-      await expect(commentRepositoryPostgres.checkOwner(commentId, owner)).resolves.not.toThrow();
+      await expect(commentRepositoryPostgres.checkOwner(commentId, owner))
+        .resolves.not.toThrow(AuthorizationError);
     });
 
     it('should throw Authorization Error invalid owner', async () => {

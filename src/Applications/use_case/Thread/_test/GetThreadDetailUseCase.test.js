@@ -13,7 +13,7 @@ describe('GetThreadDetailUseCase', () => {
     const mockCommentRepository = new CommentRepository();
     const mockReplyRepository = new ReplyRepository();
 
-    mockThreadRepository.getThreadById = jest.fn().mockImplementation(() => Promise.resolve({
+    mockThreadRepository.getThreadById = jest.fn(() => Promise.resolve({
       id: threadId,
       title: 'Thread Title',
       body: 'Thread Body',
@@ -21,8 +21,7 @@ describe('GetThreadDetailUseCase', () => {
       username: 'user123',
     }));
 
-    mockCommentRepository.getCommentsByThreadId = jest.fn()
-      .mockImplementation(() => Promise.resolve([
+    mockCommentRepository.getCommentsByThreadId = jest.fn(() => Promise.resolve([
         {
           id: 'commentId1',
           created_at: new Date('2023-01-02T00:00:00Z'),
@@ -39,8 +38,7 @@ describe('GetThreadDetailUseCase', () => {
         },
       ]));
 
-    mockReplyRepository.getRepliesByCommentId = jest.fn()
-      .mockImplementation((commentId) => {
+    mockReplyRepository.getRepliesByCommentId = jest.fn((commentId) => {
         if (commentId === 'commentId1') {
           return Promise.resolve([
             {

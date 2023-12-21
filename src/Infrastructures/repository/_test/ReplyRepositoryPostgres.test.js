@@ -32,7 +32,8 @@ describe('ReplyRepositoryPostgres', () => {
       await RepliesTableTestHelper.addReply({ id: replyId });
 
       // Action and Assert
-      await expect(replyRepositoryPostgres.checkValidId(replyId)).resolves.not.toThrow();
+      await expect(replyRepositoryPostgres.checkValidId(replyId))
+        .resolves.not.toThrow(NotFoundError);
     });
 
     it('should throw NotFoundError when reply is not found', async () => {
@@ -138,7 +139,8 @@ describe('ReplyRepositoryPostgres', () => {
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
 
       // Action and Assert
-      await expect(replyRepositoryPostgres.checkOwner(replyId, owner)).resolves.not.toThrow();
+      await expect(replyRepositoryPostgres.checkOwner(replyId, owner))
+        .resolves.not.toThrow(AuthorizationError);
     });
 
     it('should throw Authorization Error invalid owner', async () => {

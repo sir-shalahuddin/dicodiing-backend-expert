@@ -43,12 +43,12 @@ class ReplyRepositoryPostgres extends ReplyRepository {
     const { content, owner, commentId } = addReply;
     const id = `reply-${this._idGenerator()}`;
     const query = {
-      text: 'INSERT INTO replies (id, owner, created_at, content, comment_id) VALUES($1, $2, NOW(), $3, $4) RETURNING id, content, owner',
+      text: 'INSERT INTO replies (id, owner, content, comment_id) VALUES($1, $2, $3, $4) RETURNING id, content, owner',
       values: [id, owner, content, commentId],
     };
 
     const result = await this._pool.query(query);
-    return new AddedReply({ ...result.rows[0] });
+    return new AddedReply(result.rows[0]);
   }
 
   async checkOwner(replyId, owner) {
@@ -59,7 +59,7 @@ class ReplyRepositoryPostgres extends ReplyRepository {
 
     const result = await this._pool.query(query);
 
-    if (result.rows.length === 0) {
+    if (!result.rowCount) {
       throw new AuthorizationError('Kamu tidak berhak');
     }
   }

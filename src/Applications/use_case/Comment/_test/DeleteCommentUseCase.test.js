@@ -14,12 +14,9 @@ describe('DeleteCommentUseCase', () => {
     const mockCommentRepository = new CommentRepository();
 
     /** mocking needed function */
-    mockCommentRepository.checkValidId = jest.fn()
-      .mockImplementation(() => Promise.resolve());
-    mockCommentRepository.checkOwner = jest.fn()
-      .mockImplementation(() => Promise.resolve());
-    mockCommentRepository.deleteCommentById = jest.fn()
-      .mockImplementation(() => Promise.resolve('success'));
+    mockCommentRepository.checkValidId = jest.fn(() => Promise.resolve());
+    mockCommentRepository.checkOwner = jest.fn(() => Promise.resolve());
+    mockCommentRepository.deleteCommentById = jest.fn(() => Promise.resolve('success'));
 
     /** creating use case instance */
     const deleteCommentUseCase = new DeleteCommentUseCase({

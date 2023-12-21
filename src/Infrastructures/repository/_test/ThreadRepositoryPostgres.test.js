@@ -103,7 +103,8 @@ describe('ThreadRepositoryPostgres', () => {
       await ThreadsTableTestHelper.addThread({ id: existingThreadId });
 
       // Action and Assert
-      await expect(threadRepositoryPostgres.checkValidId(existingThreadId)).resolves.not.toThrow();
+      await expect(threadRepositoryPostgres.checkValidId(existingThreadId))
+        .resolves.not.toThrow(NotFoundError);
     });
 
     it('should throw NotFoundError when thread is not found', async () => {

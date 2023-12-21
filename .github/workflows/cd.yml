@@ -11,16 +11,18 @@ jobs:
     - name: executing remote ssh commands using password
       uses: appleboy/ssh-action@v1.0.0
       with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        password: ${{ secrets.PASSWORD }}
-        port: ${{ secrets.PORT }}
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_KEY}}
+        port: ${{ secrets.SSH_PORT }}
         script: | 
           cd /home/ubuntu/
           rm -rf dicodiing-backend-expert
           git clone https://github.com/sir-shalahuddin/dicodiing-backend-expert.git
           cd dicodiing-backend-expert
           npm i
+          echo "HOST=${{ secrets.HOST }}" >> .env
+          echo "PORT=${{ secrets.PORT }}" >> .env
           echo "PGHOST=localhost" >> .env
           echo "PGUSER=${{ secrets.PGUSER }}" >> .env
           echo "PGDATABASE=${{ secrets.PGDATABASE }}" >> .env
@@ -28,6 +30,7 @@ jobs:
           echo "PGPORT=5432" >> .env
           echo "ACCESS_TOKEN_KEY=${{ secrets.ACCESS_TOKEN_KEY }}" >> .env
           echo "REFRESH_TOKEN_KEY=${{ secrets.REFRESH_TOKEN_KEY }}" >> .env
+          echo "ACCESS_TOKEN_AGE=${{ secrets.ACCESS_TOKEN_AGE }}" >> .env
           npm run migrate up
           pm2 delete all
           pm2 start --name siraj src/app.js

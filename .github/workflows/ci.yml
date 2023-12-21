@@ -14,9 +14,9 @@ jobs:
       postgres:
         image: postgres
         env:
-          POSTGRES_PASSWORD: ${{ secrets.PGPASSWORD_TEST }}
-          POSTGRES_DB: ${{ secrets.PGDATABASE_TEST }}
-          POSTGRES_USER: ${{ secrets.PGUSER_TEST }}
+          POSTGRES_PASSWORD: dummypassword
+          POSTGRES_DB: db_test
+          POSTGRES_USER: ci_test_user
         ports:
           - 5432:5432
         options: >-

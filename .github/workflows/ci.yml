@@ -1,61 +1,52 @@
-name: Node.js CI
+name: Continuous Integration
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
-  run-test:
+  test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [14.17.0]
-    env: 
-      PGPORT_TEST: ${{ secrets.PGPORT_TEST }}
-      PGPORT_MAP_TEST: ${{ secrets.PGPORT_MAP_TEST }}
+
     services:
       postgres:
-        image: postgres
+        image: postgres:latest
         env:
+          POSTGRES_USER: ${{ secrets.PGUSER_TEST }}
           POSTGRES_PASSWORD: ${{ secrets.PGPASSWORD_TEST }}
           POSTGRES_DB: ${{ secrets.PGDATABASE_TEST }}
-          POSTGRES_USER: ${{ secrets.PGUSER_TEST }}
         ports:
-          - $PGPORT_MAP_TEST:$PGPORT_TEST
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          - 5432:5432
+        options: --health-cmd "pg_isready -U postgres" --health-interval 10s --health-timeout 5s --health-retries 5
+
+    strategy:
+      matrix:
+        node-version: [14.x]
 
     steps:
-    - uses: actions/checkout@v3
-
+    - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-
-    - name: Run npm install 
-      run: npm i
-
-    - run: npm ci
-
-    - name: Install node-pg-migrate
-      run: npm i node-pg-migrate
-
-    - name: Run migration
-      run: ./node_modules/.bin/node-pg-migrate up
-
-    - name: Run the test
-      run: npm test
-
+    - name: Wait for PostgreSQL to be ready
+      run: dockerize -wait tcp://localhost:5432 -timeout 1m
+      env:
+        POSTGRES_USER: ${{ secrets.PGUSER_TEST }}
+        POSTGRES_PASSWORD: ${{ secrets.PGPASSWORD_TEST }}
+        POSTGRES_DB: ${{ secrets.PGDATABASE_TEST }}
+    - name: npm install migrate and test
+      run: |
+        npm install
+        npm run migrate up
+        npm run test
       env:
         CI: true
-        PGHOST_TEST: ${{ secrets.PGHOST_TEST }}
+        PGHOST_TEST: localhost
         PGUSER_TEST: ${{ secrets.PGUSER_TEST }}
         PGDATABASE_TEST: ${{ secrets.PGDATABASE_TEST }}
         PGPASSWORD_TEST: ${{ secrets.PGPASSWORD_TEST }}
-        PGPORT_TEST: ${{ secrets.PGPORT_TEST }}
-        PGHOST: ${{ secrets.PGHOST_TEST }}
+        PGPORT_TEST: '5432'
+        ACCESS_TOKEN_KEY: ${{ secrets.ACCESS_TOKEN_KEY }}
+        REFRESH_TOKEN_KEY: ${{ secrets.REFRESH_TOKEN_KEY }}

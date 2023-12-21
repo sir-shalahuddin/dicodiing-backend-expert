@@ -1,0 +1,33 @@
+name: Node.js CD
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  Deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    steps:
+    - name: executing remote ssh commands using password
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
+        script: | 
+          cd /home/ubuntu/
+          rm -rf dicodiing-backend-expert
+          git clone https://github.com/sir-shalahuddin/dicodiing-backend-expert.git
+          cd dicodiing-backend-expert
+          npm i
+          echo "PGHOST=localhost" >> .env
+          echo "PGUSER=${{ secrets.PGUSER }}" >> .env
+          echo "PGDATABASE=${{ secrets.PGDATABASE }}" >> .env
+          echo "PGPASSWORD=${{ secrets.PGPASSWORD }}" >> .env
+          echo "PGPORT=5432" >> .env
+          echo "ACCESS_TOKEN_KEY=${{ secrets.ACCESS_TOKEN_KEY }}" >> .env
+          echo "REFRESH_TOKEN_KEY=${{ secrets.REFRESH_TOKEN_KEY }}" >> .env
+          npm run migrate up
+          pm2 delete all
+          pm2 start --name siraj src/app.js

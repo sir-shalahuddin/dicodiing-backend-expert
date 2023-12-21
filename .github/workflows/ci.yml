@@ -10,13 +10,14 @@ jobs:
     strategy:
       matrix:
         node-version: [14.17.0]
+
     services:
       postgres:
         image: postgres
         env:
-          POSTGRES_PASSWORD: supersecretpassword
-          POSTGRES_DB: forumapi_test
-          POSTGRES_USER: developer
+          POSTGRES_PASSWORD: ${{ secrets.PGPASSWORD_TEST }}
+          POSTGRES_DB: ${{ secrets.PGDATABASE_TEST }}
+          POSTGRES_USER: ${{ secrets.PGUSER_TEST }}
         ports:
           - 5432:5432
         options: >-
@@ -27,6 +28,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
@@ -38,7 +40,7 @@ jobs:
 
     - run: npm ci
 
-    - name: install node-pg-migrate
+    - name: Install node-pg-migrate
       run: npm i node-pg-migrate
 
     - name: Run migration

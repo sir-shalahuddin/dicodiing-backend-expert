@@ -30,32 +30,18 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Wait for PostgreSQL to be ready
-      run: |
-        count=0
-        max_retries=12 # 1 minute (10s interval)
-        until PGPASSWORD="${{ secrets.PGPASSWORD_TEST }}" psql -h localhost -U "${{ secrets.PGUSER_TEST }}" -d "${{ secrets.PGDATABASE_TEST }}" -c '\q' || [ $count -eq $max_retries ]; do
-            >&2 echo "PostgreSQL is unavailable - sleeping"
-            count=$((count+1))
-            sleep 5
-        done
-        if [ $count -eq $max_retries ]; then
-            >&2 echo "PostgreSQL was not ready within the given timeframe"
-            exit 1
-        fi
-     
+        
     - name: npm install migrate and test
       run: |
         npm install
         npm run migrate up
         npm run test
       env: 
-        NODE_ENV: test 
         CI: true
-        PGHOST_TEST: ${{ secrets.PGHOST_TEST }}
-        PGUSER_TEST: ${{ secrets.PGUSER_TEST }}
-        PGDATABASE_TEST: ${{ secrets.PGDATABASE_TEST }}
-        PGPASSWORD_TEST: ${{ secrets.PGPASSWORD_TEST }}
-        PGPORT_TEST: ${{ secrets.PGPORT_TEST }}
+        PGHOST: ${{ secrets.PGHOST_TEST }}
+        PGUSER: ${{ secrets.PGUSER_TEST }}
+        PGDATABASE: ${{ secrets.PGDATABASE_TEST }}
+        PGPASSWORD: ${{ secrets.PGPASSWORD_TEST }}
+        PGPORT: ${{ secrets.PGPORT_TEST }}
         ACCESS_TOKEN_KEY: ${{ secrets.ACCESS_TOKEN_KEY }}
         REFRESH_TOKEN_KEY: ${{ secrets.REFRESH_TOKEN_KEY }}

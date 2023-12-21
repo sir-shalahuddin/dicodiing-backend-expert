@@ -30,7 +30,6 @@ jobs:
           echo "PGPORT=5432" >> .env
           echo "ACCESS_TOKEN_KEY=${{ secrets.ACCESS_TOKEN_KEY }}" >> .env
           echo "REFRESH_TOKEN_KEY=${{ secrets.REFRESH_TOKEN_KEY }}" >> .env
-          echo "ACCESS_TOKEN_AGE=${{ secrets.ACCESS_TOKEN_AGE }}" >> .env
           npm run migrate up
           pm2 delete all
           pm2 start --name siraj src/app.js

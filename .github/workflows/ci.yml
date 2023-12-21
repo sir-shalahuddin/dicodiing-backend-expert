@@ -1,0 +1,48 @@
+name: Node.js CI
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  run-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14.17.0]
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.PGPASSWORD_TEST }}
+          POSTGRES_DB: ${{ secrets.PGDATABASE_TEST }}
+          POSTGRES_USER: ${{ secrets.PGUSER_TEST }}
+        ports:
+          - ${{ secrets.PGPORT_MAP_TEST }}:${{ secrets.PGPORT_TEST }}
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Run npm install 
+      run: npm i
+
+    - run: npm ci
+
+    - name: install node-pg-migrate
+      run: npm i node-pg-migrate
+
+    - name: Run migration
+      run: ./node_modules/.bin/node-pg-migrate up
+
+    - name: Run the test
+      run: npm test

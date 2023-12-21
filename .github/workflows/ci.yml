@@ -31,11 +31,18 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Wait for PostgreSQL to be ready
-      run: dockerize -wait tcp://localhost:5432 -timeout 1m
-      env:
-        POSTGRES_USER: ${{ secrets.PGUSER_TEST }}
-        POSTGRES_PASSWORD: ${{ secrets.PGPASSWORD_TEST }}
-        POSTGRES_DB: ${{ secrets.PGDATABASE_TEST }}
+      run: |
+        count=0
+        max_retries=12 # 1 minute (10s interval)
+        until PGPASSWORD="${{ secrets.PGPASSWORD_TEST }}" psql -h localhost -U "${{ secrets.PGUSER_TEST }}" -d "${{ secrets.PGDATABASE_TEST }}" -c '\q' || [ $count -eq $max_retries ]; do
+            >&2 echo "PostgreSQL is unavailable - sleeping"
+            count=$((count+1))
+            sleep 5
+        done
+        if [ $count -eq $max_retries ]; then
+            >&2 echo "PostgreSQL was not ready within the given timeframe"
+            exit 1
+        fi
     - name: npm install migrate and test
       run: |
         npm install

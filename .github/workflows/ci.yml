@@ -10,7 +10,9 @@ jobs:
     strategy:
       matrix:
         node-version: [14.17.0]
-
+    env: 
+      PGPORT_TEST: ${{ secrets.PGPORT_TEST }}
+      PGPORT_MAP_TEST: ${{ secrets.PGPORT_MAP_TEST }}
     services:
       postgres:
         image: postgres
@@ -19,7 +21,7 @@ jobs:
           POSTGRES_DB: ${{ secrets.PGDATABASE_TEST }}
           POSTGRES_USER: ${{ secrets.PGUSER_TEST }}
         ports:
-          - 5432:5432
+          - $PGPORT_MAP_TEST:$PGPORT_TEST
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -48,3 +50,12 @@ jobs:
 
     - name: Run the test
       run: npm test
+
+      env:
+        CI: true
+        PGHOST_TEST: ${{ secrets.PGHOST_TEST }}
+        PGUSER_TEST: ${{ secrets.PGUSER_TEST }}
+        PGDATABASE_TEST: ${{ secrets.PGDATABASE_TEST }}
+        PGPASSWORD_TEST: ${{ secrets.PGPASSWORD_TEST }}
+        PGPORT_TEST: ${{ secrets.PGPORT_TEST }}
+        PGHOST: ${{ secrets.PGHOST_TEST }}

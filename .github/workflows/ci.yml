@@ -46,7 +46,6 @@ jobs:
      
     - name: npm install migrate and test
       run: |
-        cat .env
         npm install
         npm run migrate up
         npm run test

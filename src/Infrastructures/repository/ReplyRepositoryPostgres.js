@@ -69,12 +69,7 @@ class ReplyRepositoryPostgres extends ReplyRepository {
       text: 'UPDATE replies SET deleted_at=NOW() WHERE deleted_at IS NULL AND id=$1',
       values: [replyId],
     };
-
-    const result = await this._pool.query(query);
-    if (result.rowCount > 0) {
-      return 'success';
-    }
-    return 'failure';
+    await this._pool.query(query);
   }
 }
 

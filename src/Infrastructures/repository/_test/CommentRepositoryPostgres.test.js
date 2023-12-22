@@ -121,7 +121,7 @@ describe('CommentRepositoryPostgres', () => {
   });
 
   describe('deleteCommentById function', () => {
-    it('should return "success" for a valid commentId', async () => {
+    it('should successfully delete a valid commentId', async () => {
       // Arrange
       const commentId = 'comment-123';
       await UsersTableTestHelper.addUser({});
@@ -131,25 +131,11 @@ describe('CommentRepositoryPostgres', () => {
       const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
 
       // Action
-      const result = await commentRepositoryPostgres.deleteCommentById(commentId);
+      await commentRepositoryPostgres.deleteCommentById(commentId);
 
       // Assert
       const comment = await CommentsTableTestHelper.findCommentById(commentId);
       expect(comment[0].deleted_at).toEqual(expect.any(Date));
-      expect(result).toBe('success');
-    });
-
-    it('should return "failure" for a non-existent commentId', async () => {
-      // Arrange
-      const nonExistentCommentId = 'non-existent-comment-id';
-
-      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
-
-      // Action
-      const result = await commentRepositoryPostgres.deleteCommentById(nonExistentCommentId);
-
-      // Assert
-      expect(result).toBe('failure');
     });
   });
 

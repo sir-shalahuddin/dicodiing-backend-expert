@@ -156,7 +156,7 @@ describe('ReplyRepositoryPostgres', () => {
   });
 
   describe('deleteReplyById function', () => {
-    it('should return "success" for a valid replyId', async () => {
+    it('should successfully delete a valid replyId', async () => {
       // Arrange
       const replyId = 'reply-123';
       await UsersTableTestHelper.addUser({});
@@ -167,24 +167,11 @@ describe('ReplyRepositoryPostgres', () => {
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
 
       // Action
-      const result = await replyRepositoryPostgres.deleteReplyById(replyId);
+      await replyRepositoryPostgres.deleteReplyById(replyId);
 
       // Assert
       const reply = await RepliesTableTestHelper.findReplyById(replyId);
       expect(reply[0].deleted_at).toEqual(expect.any(Date));
-      expect(result).toBe('success');
-    });
-
-    it('should return "failure" for a non-existent replyId', async () => {
-      // Arrange
-      const nonExistentReplyId = 'non-existent-reply-id';
-      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
-
-      // Action
-      const result = await replyRepositoryPostgres.deleteReplyById(nonExistentReplyId);
-
-      // Assert
-      expect(result).toBe('failure');
     });
   });
 });

@@ -32,10 +32,10 @@ class CommentsHandler {
     const { id: owner } = request.auth.credentials;
 
     const deleteCommentUseCase = this._container.getInstance(DeleteCommentUseCase.name);
-    const result = await deleteCommentUseCase.execute({ commentId, owner, threadId });
+    await deleteCommentUseCase.execute({ commentId, owner, threadId });
 
     const response = h.response({
-      status: result,
+      status: 'success',
     });
     response.code(200);
     return response;

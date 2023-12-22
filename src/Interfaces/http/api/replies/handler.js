@@ -35,10 +35,10 @@ class RepliesHandler {
     const { id: user } = request.auth.credentials;
 
     const deleteReplyUseCase = this._container.getInstance(DeleteReplyUseCase.name);
-    const result = await deleteReplyUseCase.execute({ replyId, user });
+    await deleteReplyUseCase.execute({ replyId, user });
 
     const response = h.response({
-      status: result,
+      status: 'success',
     });
     response.code(200);
     return response;
